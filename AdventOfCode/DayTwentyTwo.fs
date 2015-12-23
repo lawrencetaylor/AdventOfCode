@@ -52,24 +52,39 @@ module DayTwentyTwo =
                             | true -> (wizard, boss, effects)
                             | false -> let bossDeal = System.Math.Max( boss.Damage - wizard.Armour, 1)
                                        (wizard.AddHit(-bossDeal), boss, effects)
+
+    let mutable lastMin = System.Int32.MaxValue
    
     let rec playGame (counter: int) (wizard: Wizard) (boss: Boss) (effects: Map<SpellType, int>) (nextStep: int*Wizard*Boss*Map<SpellType, int> -> seq<SpellType>) = 
         asyncSeq {
+                match wizard.AmountSpent > lastMin with 
+                | true -> yield None
+                | false ->
 
-                match counter % 2 = 0 with
-                    | true -> let nextSteps = nextStep(counter, wizard, boss, effects)
-                              match boss.HitCount <= 0 with
-                                | true -> yield Some wizard.AmountSpent
-                                | false ->
-                                        for step in nextSteps do
-                                          let (wizard, boss, effects) = wizardPlay wizard boss effects step
-                                          match wizard.HitCount <= 0 with
-                                              | true -> yield None
-                                              | false -> yield! playGame (counter + 1) wizard boss effects nextStep
-                    | false -> let (wizard, boss, effects) = bossPlay wizard boss effects
-                               match boss.HitCount <= 0 with
-                                | true -> yield Some wizard.AmountSpent
-                                | false -> yield! playGame (counter + 1) wizard boss effects nextStep
+                let wizard = { wizard with HitCount = wizard.HitCount - 1}
+                match wizard.HitCount with
+                    | d when d <=0 -> yield None
+                    | _ -> 
+                        match counter % 2 = 0 with
+                            | true -> let nextSteps = nextStep(counter, wizard, boss, effects)
+                                      match boss.HitCount <= 0 with
+                                        | true ->   yield  match lastMin > wizard.AmountSpent with
+                                                                | true -> lastMin <- wizard.AmountSpent
+                                                                          wizard.AmountSpent |> Some
+                                                                | false -> None
+                                        | false ->
+                                                for step in nextSteps do
+                                                  let (wizard, boss, effects) = wizardPlay wizard boss effects step
+                                                  match wizard.HitCount <= 0 with
+                                                      | true -> yield None
+                                                      | false -> yield! playGame (counter + 1) wizard boss effects nextStep
+                            | false -> let (wizard, boss, effects) = bossPlay wizard boss effects
+                                       match boss.HitCount <= 0 with
+                                        | true -> yield  match lastMin > wizard.AmountSpent with
+                                                                | true -> lastMin <- wizard.AmountSpent
+                                                                          wizard.AmountSpent |> Some
+                                                                | false -> None
+                                        | false -> yield! playGame (counter + 1) wizard boss effects nextStep
             }
 
 
