@@ -8,24 +8,22 @@ module DayTwo =
 
     let times int x= x * int 
 
-    let solution() = let dimensions = File.ReadAllLines(@"../../../AdventOfCode/Day02.txt")
-                                                |> Seq.map(fun s -> let [l;w;h] =  s.Split([|'x'|]) |> Seq.map(Int32.Parse) |> List.ofSeq
-                                                                    (l, w, h)
-                                                          )
-    
-                     let totalAreaOfPaper = dimensions |> Seq.map(fun (l, w, h) ->  let totalSurface =  2*l*w + 2*w*h + 2*h*l
-                                                                                    let [sw ; sl] = [l;w;h] |> List.sort |> Seq.take(2) |> Seq.toList
-                                                                                    totalSurface + (sw * sl)
-                                                                  )
+    let private input = lazy File.ReadAllLines(Path.Combine(Common.rootDirectory, "Day02.txt"))
 
-                     let totalRibbon = dimensions |> Seq.map(fun (l, w, h) ->  let possibleHalfPerimiter = [l+w; l+h; h+w]
-                                                                               let minPerimiter = possibleHalfPerimiter |> List.min |> times(2)
-                                                                               let volume = l*w*h
-                                                                               volume + minPerimiter
-                                                                  )
-                     //                                     )
+    let private parseLine (str : string)  = 
+         match str.Split([|'x'|]) |> Seq.map(Int32.Parse) |> List.ofSeq with
+            | [length;width;height] -> (length, width, height)
+            | _ -> failwith "Invalid input"
 
-                     let totalArea = totalAreaOfPaper |> Seq.fold (+) 0
-                     let totalRibbon = totalRibbon |> Seq.fold (+) 0
-                     (totalArea, totalRibbon)
+    let surfaceArea (length, width, height) = 2*length*width + 2*width*height + 2*height * length
+    let smallestFaceArea (length, width, height) = [length; width; height] |> List.sort |> Seq.take(2) |> Seq.fold (*) 1
+    let volume (length, width, height) = length * width * height
+    let smallestPerimeter (length, width, height) = [length + width ; width + height; height + length] |> List.min |> times(2)
+
+    let solve() = let dimensions = input.Force() |> Seq.map(parseLine)
+                  let totalArea = dimensions |> Seq.map(fun dimensions -> surfaceArea(dimensions) + smallestFaceArea(dimensions)) 
+                                             |> Seq.fold (+) 0
+                  let totalRibbon = dimensions |> Seq.map(fun dimensions -> volume(dimensions) + smallestPerimeter(dimensions))
+                                               |> Seq.fold (+) 0
+                  (totalArea, totalRibbon)
 

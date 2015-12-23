@@ -6,7 +6,7 @@ open AdventOfCode
 [<EntryPoint>]
 let main argv = 
 
-    let x = AdventOfCode.DayTwo.solution()
+    let x = AdventOfCode.DayTwentyTwo.solve()
 
     printfn "%A" argv
     0 // return an integer exit code

@@ -1,13 +1,16 @@
-﻿// Learn more about F# at http://fsharp.net. See the 'F# Tutorial' project
-// for more guidance on F# programming.
+﻿
+#load "Common.fs"
+#load "DayOne.fs"
+#load "DayTwo.fs"
+#load "DayThree.fs"
 
-#load "Library1.fs"
-#r "../packages/FSharp.Data.2.2.5/lib/net40/bin/FSharp.Data.dll"
-open AdventOfCode
-open FSharp.Data
 
-// Define your library scripting code here
 
-let x = async { let! html = FSharp.Data.Http.AsyncRequestString("http://tomasp.net")
-                return html }
-            |> Async.Start
+let x = AdventOfCode.Common.rootDirectory <- "C:\Users\ltaylor\Documents\Visual Studio 2013\Projects\AdventOfCode\AdventOfCode"
+let (d1_1, d1_2) = AdventOfCode.DayOne.solve()
+let (d2_1, d2_2) = AdventOfCode.DayTwo.solve()
+let d3 = AdventOfCode.DayThree.solve()
+
+    
+
+    

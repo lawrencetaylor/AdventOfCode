@@ -14,17 +14,21 @@ module DayFour =
 
     let hash = md5 "hello world"B;
 
-    let hasLeadingZeros (str : string) = str.Substring(0, 6) = "000000"
-    let passes (str: string) = Console.WriteLine("Testing " + str) |> ignore
-                               str |> System.Text.Encoding.ASCII.GetBytes |> md5 |> hasLeadingZeros
+    let hasLeadingZeros (zeros: int) (str : string) = 
+        let testString = String('0', zeros)
+        str.Substring(0, zeros) = testString
 
-    //yzbqklnj9962624
-    let solution() = let x = "yzbqklnj"
-                     let y = "yzbqklnj9962624" |> passes
-                     let seq = Seq.initInfinite(fun index -> x + index.ToString())
-                                    |> Seq.filter(passes)
+    let passes (zeros: int) (str: string) = 
+                str |> System.Text.Encoding.ASCII.GetBytes |> md5 |> hasLeadingZeros(zeros)
+
+    let solve() = let x = "yzbqklnj"
+                  let nextCoin = Seq.initInfinite(fun index -> x + index.ToString())
+                                    |> Seq.filter(passes(5))
                                     |> Seq.head
-                     2
+                  let anotherCoin = Seq.initInfinite(fun index -> x + index.ToString())
+                                    |> Seq.filter(passes(6))
+                                    |> Seq.head
+                  (nextCoin, anotherCoin)
                      
                      
 

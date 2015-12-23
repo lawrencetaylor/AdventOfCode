@@ -2,34 +2,45 @@
 
 module DayThree = 
 
+    open System
     open System.IO
     open System.Collections.Generic
 
-    let map = new Dictionary<int*int, bool>()
+    let private input = lazy (File.ReadAllText(Path.Combine(Common.rootDirectory, "Day03.txt")) |> List.ofSeq)
 
-    let logVisit (x, y) = match map.ContainsKey((x,y)) with
-                            | true -> map.[(x,y)] <- true
-                            | false -> map.Add((x,y), false)
+    let visitHouse coordinates (map :Dictionary<'a, int>)  = 
+        match map.ContainsKey(coordinates) with
+            | true -> map.[coordinates] <- map.[coordinates] + 1 
+                      map
+            | false -> map.Add(coordinates, 1) |> ignore
+                       map
 
-    let solutionP input =  let folder (currentX, currentY) c =   
-                                                                 let newPosition = match c with
-                                                                                  | '>' -> (currentX + 1, currentY)
-                                                                                  | '<' -> (currentX - 1, currentY)
-                                                                                  | '^' -> (currentX, currentY + 1)
-                                                                                  | 'v' -> (currentX, currentY - 1)
-                                                                                  | _ -> (currentX, currentY)
-                                                                 logVisit((currentX, currentY))
-                                                                 newPosition
-                           
-                           logVisit((0, 0))
-                           input |> Seq.fold folder (0, 0) |> ignore
-                           
+    let move c (x, y) = 
+        match c with 
+         | '>' -> (x+1, y)
+         | '<' -> (x-1, y)
+         | '^' -> (x, y+1)
+         | 'v' -> (x, y-1)
+         | _ -> (x,y)
+
+    let rec getHouseVisits str currentVisits currentPosition = 
+        match str with
+            [] -> currentVisits
+            | x :: xs -> let currentVisits = currentVisits |> visitHouse(currentPosition)
+                         let currentPosition = currentPosition |> move(x) 
+                         getHouseVisits xs currentVisits currentPosition
+                         
 
 
+    let solve() =   
+                     let visits = getHouseVisits (input.Force()) (Dictionary<int*int,int>()) (0,0)
+                     let numberWithAPresent = visits |> Seq.length
+                     
+                     let santasPath = input.Force() |> List.indexed |> List.filter(fun (i, _) -> i%2 = 0) |> List.map(snd)
+                     let robotsPath = input.Force() |> List.indexed |> List.filter(fun (i, _) -> i%2 = 1) |> List.map(snd)
 
-    let solution() = let str = File.ReadAllText(@"../../../AdventOfCode/Day03.txt")
-                     str |> Seq.indexed |> Seq.filter(fun (index, ch) -> index % 2 = 0) |> Seq.map(snd) |> solutionP |> ignore
-                     str |> Seq.indexed |> Seq.filter(fun (index, ch) -> index % 2 = 1) |> Seq.map(snd) |> solutionP |> ignore
+                     let santasVisits = getHouseVisits santasPath (Dictionary<int*int,int>()) (0,0)
+                     let santasAndRobotsVisits = getHouseVisits robotsPath santasVisits (0,0)
+                     let santaAndRobotsHousesWithPresent = santasAndRobotsVisits |> Seq.length
 
-                     let moreThanOneVisit = map |> Seq.length
-                     moreThanOneVisit
+                     (numberWithAPresent, santaAndRobotsHousesWithPresent)

@@ -59,6 +59,11 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CSharpAdvent\CSharpAdvent.csproj">
+      <Name>CSharpAdvent</Name>
+      <Project>{deed9cbe-c116-438c-9cc0-075068463637}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.0.0.1\lib\net40\FSharp.Core.dll</HintPath>
       <Private>True</Private>
